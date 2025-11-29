@@ -29,6 +29,11 @@ local rodRemote = net:WaitForChild("RF/ChargeFishingRod")
 local miniGameRemote = net:WaitForChild("RF/RequestFishingMinigameStarted")
 local finishRemote = net:WaitForChild("RE/FishingCompleted")
 
+-- Constants & Player
+local Player = Players.LocalPlayer
+local XPBar = Player:WaitForChild("PlayerGui"):WaitForChild("XP")
+local PlaceId = game.PlaceId
+
 local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
 local Humanoid = Character:WaitForChild("Humanoid")
@@ -80,6 +85,10 @@ local character = Players.LocalPlayer.Character or Players.LocalPlayer.Character
 local humanoid = character:WaitForChild("Humanoid")
 local animator = humanoid:FindFirstChildOfClass("Animator") or Instance.new("Animator", humanoid)
 
+-- Folder References
+local Shared = ReplicatedStorage:WaitForChild("Shared", 5)
+local Modules = ReplicatedStorage:WaitForChild("Modules", 5)
+
 -- Custom Require Function
 local function customRequire(module)
     if not module then return nil end
@@ -98,6 +107,62 @@ local function customRequire(module)
         end
     end
 end
+
+-- Load Global Utilities
+if Shared then
+    if not _G.ItemUtility then
+        local success, utility = pcall(require, Shared:WaitForChild("ItemUtility", 5))
+        if success and utility then
+            _G.ItemUtility = utility
+        else
+            warn("ItemUtility module not found or failed to load.")
+        end
+    end
+    
+    if not _G.ItemStringUtility and Modules then
+        local success, stringUtility = pcall(require, Modules:WaitForChild("ItemStringUtility", 5))
+        if success and stringUtility then
+            _G.ItemStringUtility = stringUtility
+        else
+            warn("ItemStringUtility module not found or failed to load.")
+        end
+    end
+    
+    -- Load Trade Modules
+    if not _G.Replion then 
+        pcall(function() 
+            _G.Replion = require(ReplicatedStorage.Packages.Replion) 
+        end) 
+    end
+    
+    if not _G.Promise then 
+        pcall(function() 
+            _G.Promise = require(ReplicatedStorage.Packages.Promise) 
+        end) 
+    end
+    
+    if not _G.PromptController then 
+        pcall(function() 
+            _G.PromptController = require(ReplicatedStorage.Controllers.PromptController) 
+        end) 
+    end
+end
+
+-- Advanced Module Loading System
+local ModulesTable = {}
+local success, errorMessage = pcall(function()
+    local Controllers = ReplicatedStorage:WaitForChild("Controllers", 20)
+    local NetFolder = ReplicatedStorage:WaitForChild("Packages"):WaitForChild("_Index"):WaitForChild(
+        "sleitnick_net@0.2.0"):WaitForChild("net", 20)
+    
+    if not (Controllers and NetFolder and Shared) then 
+        error("Core game folders not found.") 
+    end
+
+    -- Load using customRequire
+    ModulesTable.Replion = customRequire(ReplicatedStorage.Packages.Replion)
+    ModulesTable.ItemUtility = customRequire(Shared.ItemUtility)
+    ModulesTable.FishingController = customRequire(Controllers.FishingController)
     
     -- Net Events
     ModulesTable.EquipToolEvent = NetFolder["RE/EquipToolFromHotbar"]
