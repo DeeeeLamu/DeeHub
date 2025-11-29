@@ -2001,19 +2001,6 @@ _G.REReplicateCutscene.OnClientEvent:Connect(function(rarity, player, position, 
     end
 end)
 
-_G.FishSec:Input({
-    Title = "Max Inventory Size",
-    Value = tostring(Constants.MaxInventorySize or 0),
-    Placeholder = "Input Number...",
-    Callback = function(input)
-        local newSize = tonumber(input)
-        if not newSize then
-            NotifyWarning("Inventory Size", "Must be numbers!")
-            return
-        end
-        Constants.MaxInventorySize = newSize
-    end
-})
 
 local REEquipItem = ReplicatedStorage.Packages._Index["sleitnick_net@0.2.0"].net["RE/EquipItem"]
 local RFSellItem = ReplicatedStorage.Packages._Index["sleitnick_net@0.2.0"].net["RF/SellItem"]
